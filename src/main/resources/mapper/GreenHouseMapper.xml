@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.tsu.mapper.GreenHouseMapper">
+    <resultMap id="GreenHouseMapper" type="com.tsu.entity.GreenHouse">
+        <result property="id" column="id" jdbcType="INTEGER"></result>
+        <result property="name" column="name" jdbcType="VARCHAR"></result>
+        <result property="locationId" column="location_id" jdbcType="INTEGER"></result>
+    </resultMap>
+    <resultMap id="GreenHouseHasLocationMapper" type="com.tsu.entity.GreenHouse">
+        <result property="id" column="id" jdbcType="INTEGER"></result>
+        <result property="name" column="name" jdbcType="VARCHAR"></result>
+        <result property="locationId" column="location_id" jdbcType="INTEGER"></result>
+        <association property="location" column="location_id" javaType="com.tsu.entity.Location"
+                     select="com.tsu.mapper.LocationMapper.getById"></association>
+    </resultMap>
+    <resultMap id="GreenHouseCollectionMapper" type="com.tsu.entity.GreenHouse">
+        <result property="id" column="id" jdbcType="INTEGER"></result>
+        <result property="name" column="name" jdbcType="VARCHAR"></result>
+        <result property="locationId" column="location_id" jdbcType="INTEGER"></result>
+        <collection property="children" column="id" ofType="com.tsu.entity.Device"
+                    select="com.tsu.mapper.DeviceMapper.getAllCollectionByGreenHouseId"></collection>
+    </resultMap>
+    <insert id="save" parameterType="com.tsu.entity.GreenHouse">
+        insert into t_green_house(name,location_id) value (#{name},#{locationId})
+    </insert>
+    <update id="update">
+        update t_green_house
+        <set>
+            <if test="name != null and name != ''">
+                name = #{name},
+            </if>
+            <if test="locationId != null and locationId != ''">
+                location_id = #{locationId},
+            </if>
+        </set>
+        where id = #{id}
+    </update>
+    <delete id="delete">
+        delete from t_green_house where id=#{id}
+    </delete>
+    <select id="getAllCollectionByLocationId" resultMap="GreenHouseCollectionMapper" parameterType="java.lang.Integer">
+        select id,name,location_id from t_green_house where location_id=#{locationId}
+    </select>
+    <select id="getLocationIdByGreenHouseId" resultType="java.lang.Integer" parameterType="java.lang.Integer">
+        select location_id from t_green_house where id=#{greenHouseId}
+    </select>
+    <select id="getById" resultMap="GreenHouseMapper">
+        select id,name,location_id from t_green_house where id=#{id}
+    </select>
+    <select id="getIdsByLocationIds" resultType="java.lang.Integer" parameterType="java.util.List">
+        select id from t_green_house
+        <if test="null!=locationIds">
+            where location_id in
+            <foreach collection="locationIds" index="index" item="id" open="(" separator="," close=")">
+                #{id}
+            </foreach>
+        </if>
+    </select>
+    <select id="getAll" resultMap="GreenHouseMapper">
+        select id,name from t_green_house
+    </select>
+    <select id="getAllByLocationIds" resultMap="GreenHouseMapper">
+        select id,name from t_green_house
+        <if test="null!=locationIds">
+            where location_id in
+            <foreach collection="locationIds" index="index" item="id" open="(" separator="," close=")">
+                #{id}
+            </foreach>
+        </if>
+    </select>
+    <select id="getAllHasLocation" resultMap="GreenHouseHasLocationMapper">
+        select id,name,location_id from t_green_house
+    </select>
+    <select id="getAllHasLocationByLocationIds" resultMap="GreenHouseHasLocationMapper">
+        select id,name,location_id from t_green_house
+        <if test="null!=locationIds">
+            where location_id in
+            <foreach collection="locationIds" index="index" item="id" open="(" separator="," close=")">
+                #{id}
+            </foreach>
+        </if>
+    </select>
+    <select id="getCount" resultType="java.lang.Integer">
+        select count(*) from t_green_house
+    </select>
+    <select id="getAllByLocationId" resultMap="GreenHouseMapper">
+        select id,name from t_green_house where location_id=#{locationId}
+    </select>
+    <!--    <select id="getCountByLocationIds" resultType="java.lang.Integer">
+            select count(id) from t_green_house
+            <if test="null!=locationIds">
+                where location_id in
+                <foreach collection="locationIds" index="index" item="id" open="(" separator="," close=")">
+                    #{id}
+                </foreach>
+            </if>
+        </select>-->
+
+
+</mapper>

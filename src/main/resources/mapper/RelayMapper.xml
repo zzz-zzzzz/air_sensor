@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.tsu.mapper.RelayMapper">
+
+    <resultMap id="relayMapper" type="com.tsu.entity.Relay">
+        <result property="id" column="id" jdbcType="INTEGER"></result>
+        <result property="name" column="name" jdbcType="VARCHAR"></result>
+        <result property="greenHouseId" column="green_house_id" jdbcType="INTEGER"></result>
+        <result property="isOpen" column="is_open" jdbcType="TINYINT"></result>
+        <result property="identityId" column="identity_id" jdbcType="INTEGER"></result>
+        <result property="deviceId" column="device_id" jdbcType="VARCHAR"></result>
+        <result property="type" column="type" jdbcType="INTEGER"></result>
+        <result property="autoTrigger" column="auto_trigger" jdbcType="TINYINT"></result>
+    </resultMap>
+
+
+    <resultMap id="relayHasGreenHouseMapper" type="com.tsu.entity.Relay">
+        <result property="id" column="id" jdbcType="INTEGER"></result>
+        <result property="name" column="name" jdbcType="VARCHAR"></result>
+        <result property="greenHouseId" column="green_house_id" jdbcType="INTEGER"></result>
+        <result property="isOpen" column="is_open" jdbcType="TINYINT"></result>
+        <result property="identityId" column="identity_id" jdbcType="INTEGER"></result>
+        <result property="type" column="type" jdbcType="INTEGER"></result>
+        <result property="deviceId" column="device_id" jdbcType="VARCHAR"></result>
+        <result property="autoTrigger" column="auto_trigger" jdbcType="TINYINT"></result>
+        <association property="greenHouse" column="green_house_id" javaType="com.tsu.entity.GreenHouse"
+                     select="com.tsu.mapper.GreenHouseMapper.getById"></association>
+    </resultMap>
+
+
+    <insert id="save" parameterType="com.tsu.entity.Relay">
+        insert into t_relay(name,type,green_house_id,is_open,identity_id,device_id)
+        value (#{name},#{type},#{greenHouseId},#{isOpen},#{identityId},#{deviceId})
+    </insert>
+    <update id="updateIsOpenByIdentityIdAndDeviceId">
+        update t_relay set is_open=#{isOpen} where identity_id=#{identityId} and device_id=#{deviceId}
+    </update>
+    <update id="update" parameterType="com.tsu.entity.Relay">
+        update t_relay
+        <set>
+            <if test="name != null and name !=''">
+                name = #{name},
+            </if>
+            <if test="greenHouseId != null">
+                green_house_id = #{greenHouseId},
+            </if>
+            <if test="identityId != null">
+                identity_id = #{identityId},
+            </if>
+            <if test="type != null">
+                type = #{type},
+            </if>
+            <if test="deviceId != null">
+                device_id = #{deviceId}
+            </if>
+        </set>
+        where id=#{id}
+    </update>
+    <update id="updateIsOpenById">
+        update t_relay set is_open=#{isOpen} where id=#{id}
+    </update>
+    <update id="updateAutoTriggerById">
+        update t_relay set auto_trigger =#{autoTrigger} where id=#{id}
+    </update>
+    <delete id="deleteById" parameterType="java.lang.Integer">
+        delete from t_relay where id=#{id}
+    </delete>
+    <select id="getByGreenHouseId" resultMap="relayMapper">
+        select id,name,green_house_id,is_open from t_relay where green_house_id = #{greenHouseId}
+    </select>
+    <select id="getAllHasGreenHouse" resultMap="relayHasGreenHouseMapper">
+        select id,name,green_house_id,is_open,identity_id,type,device_id,auto_trigger from t_relay
+    </select>
+    <select id="getAllHasGreenHouseByGreenHouseIds" resultMap="relayHasGreenHouseMapper">
+        select id,name,green_house_id,is_open,identity_id,type,device_id from t_relay
+        <if test="greenHouseIds!=null">
+            where green_house_id in
+            <foreach collection="greenHouseIds" open="(" separator="," close=")" item="id">
+                #{id}
+            </foreach>
+        </if>
+    </select>
+    <select id="getIdentityIdAndDeviceIdById" parameterType="java.lang.Integer" resultMap="relayMapper">
+        select id,identity_id,device_id from t_relay where id=#{id}
+    </select>
+    <select id="getIdGreenHouseIdById" resultType="java.lang.Integer">
+        select green_house_id from t_relay where id=#{id}
+    </select>
+    <select id="getCount" resultType="java.lang.Integer">
+        select count(id) from t_relay;
+    </select>
+    <select id="getCountByGreenHouseIds" resultType="java.lang.Integer">
+        select count(id) from t_relay
+        <if test="greenHouseIds!=null">
+            where green_house_id in
+            <foreach collection="greenHouseIds" open="(" close=")" separator="," item="id">
+                #{id}
+            </foreach>
+        </if>
+    </select>
+    <select id="getByIdsAndType" resultMap="relayMapper">
+        select id,identity_id,device_id from t_relay where type=#{type} and auto_trigger=1
+        <if test="ids!=null">
+            and id in
+            <foreach collection="ids" item="id" open="(" close=")" separator=",">
+                #{id}
+            </foreach>
+        </if>
+    </select>
+
+</mapper>

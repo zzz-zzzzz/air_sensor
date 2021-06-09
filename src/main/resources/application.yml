@@ -1,0 +1,41 @@
+spring:
+  datasource:
+    username: root
+    url: jdbc:mysql://192.168.36.188:3306/air_sensor?useUnicode=true&characterEncoding=UTF-8&zeroDateTimeBehavior=convertToNull&useSSL=true&allowMultiQueries=true
+    password: 123456
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  jackson:
+    default-property-inclusion: non_null
+
+mybatis:
+  mapper-locations: classpath:/mapper/*.xml
+
+system:
+  admin-code: admin
+  alarm-timeout: 0b10
+mqtt:
+  channel01:
+    id: zzz_01
+    url: tcp://eu1.cloud.thethings.network:1883
+    user: air-sensor@ttn
+    password: NNSXS.CHQKW75RQMM2RYKNTDJXAGGVLP27AUNSFEBKQUI.46DVKWI4H5DYTY76M57LUHOC2AK2I7BVHKX5GII44O4ZAJO5AO4Q
+    keep-alive-interval: 3000
+    qos: 1
+    input-topic: "#"
+    clean-session: false
+    automatic-reconnect: true
+    completion-timeout: 30000
+  channel02:
+    id: zzz_02
+    url: tcp://eu1.cloud.thethings.network:1883
+    user: lora-relay@ttn
+    password: NNSXS.XUBECYY47F46PXLANEHAU3UUEULRKIPITIJYDCQ.N7G3SNAG5JKHA2C5EMS6VMKM2WFCCPGWTBIYJ5T6BJ4AJUFEG2DQ
+    keep-alive-interval: 3000
+    qos: 1
+    input-topic: "#"
+    clean-session: false
+    automatic-reconnect: true
+    completion-timeout: 30000
+server:
+  port: 8081
+

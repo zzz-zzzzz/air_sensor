@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.tsu.mapper.AirDataAverageMapper">
+
+
+    <resultMap type="com.tsu.entity.AirDataAverage" id="AirDataAverageMap">
+        <result property="id" column="id" jdbcType="BIGINT"/>
+        <result property="deviceId" column="device_id" jdbcType="VARCHAR"/>
+        <result property="pressureAverage" column="pressure_average" jdbcType="DOUBLE"/>
+        <result property="temperatureAverage" column="temperature_average" jdbcType="DOUBLE"/>
+        <result property="humidityAverage" column="humidity_average" jdbcType="DOUBLE"/>
+        <result property="illuminationAverage" column="illumination_average" jdbcType="DOUBLE"/>
+        <result property="co2Average" column="co2_Average" jdbcType="DOUBLE"/>
+        <result property="tvocAverage" column="tvoc_average" jdbcType="DOUBLE"/>
+        <result property="recordTime" column="record_time" jdbcType="DOUBLE"/>
+    </resultMap>
+
+
+    <insert id="save" parameterType="com.tsu.entity.AirDataAverage">
+        insert into t_air_data_average(temperature_average,humidity_average,pressure_average,illumination_average,co2_average,tvoc_average,record_time,device_id)
+        values(#{temperatureAverage},#{humidityAverage},#{pressureAverage},#{illuminationAverage},#{co2Average},#{tvocAverage},#{recordTime},#{deviceId})
+    </insert>
+    <insert id="batchSave">
+        insert into
+        t_air_data_average(temperature_average,humidity_average,pressure_average,illumination_average,co2_average,tvoc_average,record_time,device_id)
+        values
+        <foreach collection="airDataValueAverageList" index="index"
+                 item="item" separator=",">
+            (#{item.temperatureAverage},#{item.humidityAverage},#{item.pressureAverage},#{item.illuminationAverage},#{item.co2Average},#{item.tvocAverage},#{item.recordTime},#{item.deviceId})
+        </foreach>
+    </insert>
+    <select id="getByRecordeTimeAndDeviceId" resultMap="AirDataAverageMap">
+        select id,device_id,pressure_average,temperature_average,humidity_average,illumination_average,co2_average,tvoc_average,record_time
+        from t_air_data_average
+        where device_id=#{deviceId}
+        <if test="recordTimeList!=null">
+            and record_time in
+            <foreach collection="recordTimeList" item="date" open="(" close=")" separator=",">
+                #{date}
+            </foreach>
+        </if>
+    </select>
+</mapper>

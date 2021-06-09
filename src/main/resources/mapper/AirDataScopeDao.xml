@@ -1,0 +1,169 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.tsu.mapper.AirDataScopeMapper">
+
+    <resultMap type="com.tsu.entity.AirDataScope" id="AirDataScopeMap">
+        <result property="id" column="id" jdbcType="INTEGER"/>
+        <result property="deviceId" column="device_id" jdbcType="INTEGER"/>
+        <result property="isOpen" column="is_open" jdbcType="VARCHAR"/>
+        <result property="temperatureMin" column="temperature_min" jdbcType="VARCHAR"/>
+        <result property="temperatureMax" column="temperature_max" jdbcType="VARCHAR"/>
+        <result property="humidityMin" column="humidity_min" jdbcType="VARCHAR"/>
+        <result property="humidityMax" column="humidity_max" jdbcType="VARCHAR"/>
+        <result property="pressureMin" column="pressure_min" jdbcType="VARCHAR"/>
+        <result property="pressureMax" column="pressure_max" jdbcType="VARCHAR"/>
+        <result property="tovcMin" column="tovc_min" jdbcType="VARCHAR"/>
+        <result property="tovcMax" column="tovc_max" jdbcType="VARCHAR"/>
+        <result property="co2Min" column="co2_min" jdbcType="VARCHAR"/>
+        <result property="co2Max" column="co2_max" jdbcType="VARCHAR"/>
+        <result property="illuminationMin" column="illumination_min" jdbcType="VARCHAR"/>
+        <result property="illuminationMax" column="illumination_max" jdbcType="VARCHAR"/>
+        <result property="relayIdsString" column="relay_ids" jdbcType="VARCHAR"/>
+    </resultMap>
+    <insert id="save" parameterType="com.tsu.entity.AirDataScope">
+          insert into air_sensor.t_air_data_scope(device_id, is_open, temperature_min, temperature_max, humidity_min, humidity_max, pressure_min, pressure_max, tovc_min, tovc_max, co2_min, co2_max, illumination_min, illumination_max,relay_ids)
+        values (#{deviceId}, #{isOpen}, #{temperatureMin}, #{temperatureMax}, #{humidityMin}, #{humidityMax}, #{pressureMin}, #{pressureMax}, #{tovcMin}, #{tovcMax}, #{co2Min}, #{co2Max}, #{illuminationMin}, #{illuminationMax},#{relayIdsString})
+    </insert>
+    <select id="getByDeviceId" resultMap="AirDataScopeMap">
+         select
+          id, device_id, is_open, temperature_min, temperature_max, humidity_min, humidity_max, pressure_min, pressure_max, tovc_min, tovc_max, co2_min, co2_max, illumination_min, illumination_max,relay_ids
+        from air_sensor.t_air_data_scope
+        where device_id = #{deviceId}
+    </select>
+
+    <update id="update" parameterType="com.tsu.entity.AirDataScope">
+        update air_sensor.t_air_data_scope set
+                device_id = #{deviceId},
+                is_open = #{isOpen},
+                temperature_min = #{temperatureMin},
+                temperature_max = #{temperatureMax},
+                humidity_min = #{humidityMin},
+                humidity_max = #{humidityMax},
+                pressure_min = #{pressureMin},
+                pressure_max = #{pressureMax},
+                tovc_min = #{tovcMin},
+                tovc_max = #{tovcMax},
+                co2_min = #{co2Min},
+                co2_max = #{co2Max},
+                illumination_min = #{illuminationMin},
+                illumination_max = #{illuminationMax},
+                relay_ids=#{relayIdsString}
+        where id = #{id}
+    </update>
+
+
+    <!--&lt;!&ndash;查询单个&ndash;&gt;
+    <select id="queryById" resultMap="TAirDataScopeMap">
+        select
+          id, device_id, is_open, temperature_min, temperature_max, humidity_min, humidity_max, pressure_min, pressure_max, tovc_min, tovc_max, co2_min, co2_max, illumination_min, illumination_max
+        from air_sensor.t_air_data_scope
+        where id = #{id}
+    </select>
+
+    &lt;!&ndash;查询指定行数据&ndash;&gt;
+    <select id="queryAllByLimit" resultMap="TAirDataScopeMap">
+        select
+          id, device_id, is_open, temperature_min, temperature_max, humidity_min, humidity_max, pressure_min, pressure_max, tovc_min, tovc_max, co2_min, co2_max, illumination_min, illumination_max
+        from air_sensor.t_air_data_scope
+        limit #{offset}, #{limit}
+    </select>
+
+    &lt;!&ndash;通过实体作为筛选条件查询&ndash;&gt;
+    <select id="queryAll" resultMap="TAirDataScopeMap">
+        select
+        id, device_id, is_open, temperature_min, temperature_max, humidity_min, humidity_max, pressure_min,
+        pressure_max, tovc_min, tovc_max, co2_min, co2_max, illumination_min, illumination_max
+        from air_sensor.t_air_data_scope
+        <where>
+            <if test="id != null">
+                and id = #{id}
+            </if>
+            <if test="deviceId != null">
+                and device_id = #{deviceId}
+            </if>
+            <if test="isOpen != null">
+                and is_open = #{isOpen}
+            </if>
+            <if test="temperatureMin != null">
+                and temperature_min = #{temperatureMin}
+            </if>
+            <if test="temperatureMax != null">
+                and temperature_max = #{temperatureMax}
+            </if>
+            <if test="humidityMin != null">
+                and humidity_min = #{humidityMin}
+            </if>
+            <if test="humidityMax != null">
+                and humidity_max = #{humidityMax}
+            </if>
+            <if test="pressureMin != null">
+                and pressure_min = #{pressureMin}
+            </if>
+            <if test="pressureMax != null">
+                and pressure_max = #{pressureMax}
+            </if>
+            <if test="tovcMin != null">
+                and tovc_min = #{tovcMin}
+            </if>
+            <if test="tovcMax != null">
+                and tovc_max = #{tovcMax}
+            </if>
+            <if test="co2Min != null">
+                and co2_min = #{co2Min}
+            </if>
+            <if test="co2Max != null">
+                and co2_max = #{co2Max}
+            </if>
+            <if test="illuminationMin != null">
+                and illumination_min = #{illuminationMin}
+            </if>
+            <if test="illuminationMax != null">
+                and illumination_max = #{illuminationMax}
+            </if>
+        </where>
+    </select>
+
+
+
+    <insert id="insertBatch" keyProperty="id" useGeneratedKeys="true">
+        insert into air_sensor.t_air_data_scope(device_id, is_open, temperature_min, temperature_max, humidity_min,
+        humidity_max, pressure_min, pressure_max, tovc_min, tovc_max, co2_min, co2_max, illumination_min,
+        illumination_max)
+        values
+        <foreach collection="entities" item="entity" separator=",">
+            (#{entity.deviceId}, #{entity.isOpen}, #{entity.temperatureMin}, #{entity.temperatureMax},
+            #{entity.humidityMin}, #{entity.humidityMax}, #{entity.pressureMin}, #{entity.pressureMax},
+            #{entity.tovcMin}, #{entity.tovcMax}, #{entity.co2Min}, #{entity.co2Max}, #{entity.illuminationMin},
+            #{entity.illuminationMax})
+        </foreach>
+    </insert>
+
+    <insert id="insertOrUpdateBatch" keyProperty="id" useGeneratedKeys="true">
+        insert into air_sensor.t_air_data_scope(device_id, is_open, temperature_min, temperature_max, humidity_min,
+        humidity_max, pressure_min, pressure_max, tovc_min, tovc_max, co2_min, co2_max, illumination_min,
+        illumination_max)
+        values
+        <foreach collection="entities" item="entity" separator=",">
+            (#{entity.deviceId}, #{entity.isOpen}, #{entity.temperatureMin}, #{entity.temperatureMax},
+            #{entity.humidityMin}, #{entity.humidityMax}, #{entity.pressureMin}, #{entity.pressureMax},
+            #{entity.tovcMin}, #{entity.tovcMax}, #{entity.co2Min}, #{entity.co2Max}, #{entity.illuminationMin},
+            #{entity.illuminationMax})
+        </foreach>
+        on duplicate key update
+        device_id = values(device_id) , is_open = values(is_open) , temperature_min = values(temperature_min) ,
+        temperature_max = values(temperature_max) , humidity_min = values(humidity_min) , humidity_max =
+        values(humidity_max) , pressure_min = values(pressure_min) , pressure_max = values(pressure_max) , tovc_min =
+        values(tovc_min) , tovc_max = values(tovc_max) , co2_min = values(co2_min) , co2_max = values(co2_max) ,
+        illumination_min = values(illumination_min) , illumination_max = values(illumination_max)
+    </insert>
+
+    &lt;!&ndash;通过主键修改数据&ndash;&gt;
+
+
+    &lt;!&ndash;通过主键删除&ndash;&gt;
+    <delete id="deleteById">
+        delete from air_sensor.t_air_data_scope where id = #{id}
+    </delete>-->
+
+</mapper>
+

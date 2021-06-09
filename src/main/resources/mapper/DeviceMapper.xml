@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.tsu.mapper.DeviceMapper">
+
+    <resultMap id="DeviceMapper" type="com.tsu.entity.Device">
+        <result property="id" column="id" jdbcType="INTEGER"></result>
+        <result property="name" column="name" jdbcType="VARCHAR"></result>
+        <result property="deviceId" column="device_id" jdbcType="VARCHAR"></result>
+        <result property="greenHouseId" column="green_house_id" jdbcType="INTEGER"></result>
+    </resultMap>
+
+    <resultMap id="DeviceSimpleMapper" type="com.tsu.entity.Device">
+        <result property="id" column="id" jdbcType="INTEGER"></result>
+        <result property="name" column="name" jdbcType="VARCHAR"></result>
+    </resultMap>
+
+
+    <resultMap id="DeviceHasGreenHouseMapper" type="com.tsu.entity.Device">
+        <result property="id" column="id" jdbcType="INTEGER"></result>
+        <result property="name" column="name" jdbcType="VARCHAR"></result>
+        <result property="deviceId" column="device_id" jdbcType="VARCHAR"></result>
+        <result property="greenHouseId" column="green_house_id" jdbcType="INTEGER"></result>
+        <association property="greenHouse" column="green_house_id" select="com.tsu.mapper.GreenHouseMapper.getById"
+                     javaType="com.tsu.entity.GreenHouse"></association>
+    </resultMap>
+    <insert id="save" parameterType="com.tsu.entity.Device">
+        insert into t_device(name,device_id,green_house_id) values(#{name},#{deviceId},#{greenHouseId})
+    </insert>
+    <update id="update" parameterType="com.tsu.entity.Device">
+        update t_device
+        <set>
+            <if test="name != null and name != ''">
+                name = #{name},
+            </if>
+            <if test="deviceId != null and deviceId != ''">
+                device_id = #{deviceId},
+            </if>
+            <if test="greenHouseId != null and greenHouseId != ''">
+                green_house_id = #{greenHouseId},
+            </if>
+        </set>
+        where id = #{id}
+
+    </update>
+    <!--    <update id="setAlarmByDeviceId">
+            update t_device set is_alarm=true where device_id=#{deviceId}
+        </update>-->
+    <delete id="delete">
+        delete from t_device where id=#{deviceId}
+    </delete>
+
+    <select id="getAllCollectionByGreenHouseId" resultMap="DeviceMapper">
+        select id,name,device_id,green_house_id from t_device where green_house_id=#{greenHouseId}
+    </select>
+    <select id="getGreenHouseIdByDeviceId" resultType="java.lang.Integer">
+        select green_house_id from t_device where id=#{deviceId}
+    </select>
+    <select id="getIdByDeviceId" resultType="java.lang.Integer">
+        select id from t_device where device_id=#{deviceId}
+    </select>
+    <select id="getAllAndGreenHouse" resultMap="DeviceHasGreenHouseMapper">
+        select id,name,device_id,green_house_id from t_device
+    </select>
+    <select id="getAllByGreenHouseIds" resultMap="DeviceHasGreenHouseMapper">
+        select id,name,device_id,green_house_id from t_device
+        <if test="null!=greenHouseIds">
+            where green_house_id in
+            <foreach collection="greenHouseIds" index="index" item="id" open="(" separator="," close=")">
+                #{id}
+            </foreach>
+        </if>
+    </select>
+    <select id="getAllId" resultType="java.lang.Integer">
+        select id from t_device
+    </select>
+    <select id="getIdByGreenHouseIds" resultType="java.lang.Integer">
+        select id from t_device
+        <if test="greenHouseIds!=null">
+            where green_house_id in
+            <foreach collection="greenHouseIds" index="index" item="id" open="(" separator="," close=")">
+                #{id}
+            </foreach>
+        </if>
+    </select>
+    <select id="getCount" resultType="java.lang.Integer">
+        select count(id) from t_device
+    </select>
+    <select id="getByGreenHouseIds" resultMap="DeviceMapper">
+        select id,device_id from t_device
+        <if test="greenHouseIds!=null">
+            where green_house_id in
+            <foreach collection="greenHouseIds" index="index" item="id" open="(" separator="," close=")">
+                #{id}
+            </foreach>
+        </if>
+    </select>
+    <select id="getByGreenHouseId" resultMap="DeviceMapper">
+        select id,name,device_id from t_device where green_house_id=#{greenHouseId}
+    </select>
+    <select id="getIdByGreenHouseId" resultType="java.lang.Integer">
+        select id from t_device where green_house_id=#{greenHouseId}
+    </select>
+</mapper>

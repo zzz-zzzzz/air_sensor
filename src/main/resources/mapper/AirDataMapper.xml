@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.tsu.mapper.AirDataMapper">
+
+    <resultMap type="com.tsu.entity.AirData" id="AirDataMap">
+        <result property="id" column="id" jdbcType="BIGINT"/>
+        <result property="deviceId" column="device_id" jdbcType="VARCHAR"/>
+        <result property="humidity" column="humidity" jdbcType="VARCHAR"/>
+        <result property="temperature" column="temperature" jdbcType="VARCHAR"/>
+        <result property="pressure" column="pressure" jdbcType="VARCHAR"/>
+        <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
+        <result property="tovc" column="tovc" jdbcType="VARCHAR"/>
+        <result property="batteryVoltage" column="battery_voltage" jdbcType="VARCHAR"/>
+        <result property="co2" column="co2" jdbcType="VARCHAR"/>
+        <result property="illumination" column="illumination" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <resultMap type="com.tsu.entity.AirDataValueAverage" id="AirDataValueAverageMap">
+        <result property="deviceId" column="device_id" jdbcType="VARCHAR"/>
+        <result property="average" column="average" jdbcType="DOUBLE"/>
+    </resultMap>
+
+
+    <insert id="save" keyProperty="id" useGeneratedKeys="true" parameterType="com.tsu.entity.AirData">
+        insert into air_sensor.t_air_data(device_id, humidity, temperature, pressure, create_time, tovc, battery_voltage, co2, illumination)
+        values (#{deviceId}, #{humidity}, #{temperature}, #{pressure}, #{createTime}, #{tovc}, #{batteryVoltage}, #{co2}, #{illumination})
+    </insert>
+    <select id="getTemperatureAverage" resultMap="AirDataValueAverageMap">
+       SELECT device_id ,AVG(temperature) AS average FROM t_air_data WHERE create_time BETWEEN #{startTime} AND #{endTime} GROUP BY device_id
+    </select>
+    <select id="getCount" resultType="java.lang.Long">
+        select count(id) from t_air_data
+    </select>
+    <select id="getCountByDeviceIds" resultType="java.lang.Long">
+        select count(id) from t_air_data
+        <if test="deviceIds!=null">
+            where device_id in
+            <foreach collection="deviceIds" index="index" item="id" open="(" separator="," close=")">
+                #{id}
+            </foreach>
+        </if>
+    </select>
+    <select id="getLatest" resultMap="AirDataMap">
+        select id,humidity,temperature,pressure,create_time,tovc,battery_voltage,co2,illumination
+        from t_air_data
+        where device_id=#{deviceId} order by create_time DESC limit 0,1
+    </select>
+    <select id="getHumidityAverage" resultMap="AirDataValueAverageMap">
+        SELECT device_id,AVG(humidity) AS average FROM t_air_data WHERE create_time BETWEEN #{startTime} AND #{endTime} GROUP BY device_id
+    </select>
+
+
+</mapper>
+

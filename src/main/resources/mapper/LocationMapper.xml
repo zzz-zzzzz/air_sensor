@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.tsu.mapper.LocationMapper">
+    <resultMap id="LocationMapper" type="com.tsu.entity.Location">
+        <result property="id" column="id"></result>
+        <result property="name" column="name"></result>
+        <result property="longitude" column="longitude"></result>
+        <result property="latitude" column="latitude"></result>
+    </resultMap>
+
+    <resultMap id="LocationMapper01" type="com.tsu.entity.Location">
+        <result property="id" column="id"></result>
+        <result property="name" column="name"></result>
+    </resultMap>
+
+    <insert id="save" parameterType="com.tsu.entity.Location">
+        insert into t_location(name,latitude,longitude) values(#{name},#{latitude},#{longitude})
+    </insert>
+    <insert id="distributeLocation" parameterType="com.tsu.entity.Location">
+        insert into t_user_location(user_id,location_id) values(#{userId},#{locationId})
+    </insert>
+    <update id="update">
+        update t_location
+        <set>
+            <if test="name != null and name != ''">
+                name = #{name},
+            </if>
+            <if test="latitude!=null and latitude !=''">
+                latitude=#{latitude}
+            </if>
+            <if test="longitude!=null and longitude !=''">
+                longitude=#{longitude}
+            </if>
+        </set>
+        where id = #{id}
+    </update>
+    <delete id="deleteRelationByUserIdAndLocationId">
+        delete from t_user_location where user_id=#{userId} and location_id=#{locationId}
+    </delete>
+    <delete id="delete" parameterType="java.lang.Integer">
+        delete from t_location where id=#{locationId}
+    </delete>
+    <delete id="deleteRelationByLocationId" parameterType="java.lang.Integer">
+        delete from t_user_location where location_id=#{locationId}
+    </delete>
+    <select id="getIdsByUserId" resultType="java.lang.Integer">
+        select tl.id from t_user_location tul left join t_location tl on tul.location_id=tl.id where tul.user_id=#{userId}
+    </select>
+
+    <select id="getAllByUserId" resultType="com.tsu.entity.Location">
+        select tl.id,tl.name,tl.latitude,tl.longitude from t_user_location tul left join t_location tl on tul.location_id=tl.id where tul.user_id=#{userId}
+    </select>
+    <resultMap id="LocationCollectionMapper" type="com.tsu.entity.Location">
+        <result property="id" column="id"></result>
+        <result property="name" column="name"></result>
+        <collection property="children" column="id" ofType="com.tsu.entity.GreenHouse"
+                    select="com.tsu.mapper.GreenHouseMapper.getAllCollectionByLocationId"></collection>
+    </resultMap>
+    <select id="getAllCollectionByUserId" resultMap="LocationCollectionMapper">
+        select tl.id,tl.name,tl.latitude,tl.longitude from t_user_location tul left join t_location tl on tul.location_id=tl.id where tul.user_id=#{userId}
+    </select>
+    <select id="hasLocation" resultType="java.lang.Integer">
+        select count(*) from t_user_location where user_id=#{userId} and location_id=#{locationId}
+    </select>
+    <select id="getAll" resultMap="LocationMapper">
+        select id,name,latitude,longitude from t_location
+    </select>
+    <select id="getAllAndCollection" resultMap="LocationCollectionMapper">
+        select id,name from t_location
+    </select>
+    <select id="getCountUserIdAndLocationId" resultType="java.lang.Integer">
+        select count(*) from t_user_location where user_id=#{userId} and location_id=#{locationId}
+    </select>
+    <select id="getById" resultMap="LocationMapper">
+        select id,name from t_location where id=#{id}
+    </select>
+    <select id="getCount" resultType="java.lang.Integer">
+        select count(id) from t_location
+    </select>
+    <select id="getByGreenHouseId" resultMap="LocationMapper">
+        select tl.longitude,tl.latitude from t_green_house tgh join t_location tl on tgh.location_id=tl.id where tgh.id=#{greenHouseId}
+    </select>
+</mapper>
