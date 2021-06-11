@@ -55,6 +55,5 @@
     <select id="findAll" resultMap="userCollectionMap">
         select id,username from t_user
     </select>
-
 </mapper>
 

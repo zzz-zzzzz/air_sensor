@@ -60,4 +60,5 @@ public interface UserMapper {
      * @param userId
      */
     void deleteRelationByUserId(Integer userId);
+
 }

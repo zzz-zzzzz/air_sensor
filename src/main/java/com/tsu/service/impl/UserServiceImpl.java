@@ -36,9 +36,9 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public void add(User user) throws HasUserException{
+    public void add(User user) throws HasUserException {
         // TODO: 2021/5/17 查询是否有这个用户 如果有返回错误码
-        if (userMapper.getByUsername(user.getUsername())!=null){
+        if (userMapper.getByUsername(user.getUsername()) != null) {
             throw new HasUserException("存在这个用户");
         }
         Map<String, String> encrypt = EncryptUtil.encrypt(user.getPassword());
@@ -69,6 +69,10 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public void update(User user) {
+        Map<String, String> encrypt = EncryptUtil.encrypt(user.getPassword());
+        user
+                .setPassword(encrypt.get("password"))
+                .setSalt(encrypt.get("salt"));
         userMapper.update(user);
     }
 
@@ -80,4 +84,8 @@ public class UserServiceImpl implements UserService {
         return pageInfo;
     }
 
+    public static void main(String[] args) {
+        Map<String, String> encrypt = EncryptUtil.encrypt("123456");
+        System.out.println(encrypt);
+    }
 }
