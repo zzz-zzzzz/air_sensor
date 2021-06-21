@@ -33,6 +33,9 @@ public class JwtFilter extends BasicHttpAuthenticationFilter {
     @Autowired
     ObjectMapper objectMapper;
 
+    @Autowired
+    Result result;
+
     /**
      * 前置处理，第一个执行
      *
@@ -148,9 +151,9 @@ public class JwtFilter extends BasicHttpAuthenticationFilter {
         HttpServletResponse httpResponse = WebUtils.toHttp(servletResponse);
         httpResponse.setCharacterEncoding("UTF-8");
         httpResponse.setContentType("application/json;charset=UTF-8");
-        httpResponse.setStatus(HttpStatus.UNAUTHORIZED.value());
+        httpResponse.setStatus(200);
         PrintWriter writer = httpResponse.getWriter();
-        writer.write(Result.UNAUTHORIZED_RESULT);
+        writer.write(objectMapper.writeValueAsString(result));
         fillCorsHeader(WebUtils.toHttp(servletRequest), httpResponse);
         return false;
     }

@@ -15,7 +15,7 @@ import java.util.Map;
 public class Result {
     private int status;
 
-    public static final String UNAUTHORIZED_RESULT = "{status:" + HttpStatusConstant.UNAUTHORIZED + "}";
+//    public static final String UNAUTHORIZED_RESULT = "{status:" + HttpStatusConstant.UNAUTHORIZED + "}";
 
 
     private Map<String, Object> data;
