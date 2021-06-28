@@ -11,12 +11,7 @@ import java.util.Map;
  * @author zzz
  */
 public interface AirDataService {
-    /**
-     * 保存mqtt服务器发送的数据到数据库
-     *
-     * @param bytes
-     */
-    void saveMqttBytes(byte[] bytes);
+
 
     /**
      * 获取一个时间段的平均温度
@@ -55,4 +50,6 @@ public interface AirDataService {
      * @return
      */
     AirData getLatest(String deviceId);
+
+    void saveMqttMap(Map payLoad);
 }

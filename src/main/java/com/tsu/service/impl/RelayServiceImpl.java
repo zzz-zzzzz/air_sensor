@@ -21,6 +21,7 @@ import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
+import org.springframework.util.ObjectUtils;
 
 import java.io.IOException;
 import java.util.List;
@@ -32,8 +33,7 @@ import java.util.Map;
 @Service
 @Slf4j
 public class RelayServiceImpl implements RelayService {
-    @Autowired
-    DataSourceTransactionManager transactionManager;
+
 
     @Autowired
     RelayMapper relayMapper;
@@ -58,34 +58,20 @@ public class RelayServiceImpl implements RelayService {
 
     @Transactional
     @Override
-    public void saveMqttBytes(byte[] bytes) {
-        // TODO: 2021/5/10 存在bug
-        DefaultTransactionDefinition definition = new DefaultTransactionDefinition();
-        definition.setName("relayService.saveMqttBytes");
-        definition.setPropagationBehavior(TransactionDefinition.PROPAGATION_REQUIRED);
-        TransactionStatus status = transactionManager.getTransaction(definition);
-        try {
-            Map map = objectMapper.readValue(bytes, Map.class);
-            Map uplinkMessage = (Map) map.get("uplink_message");
-            if (uplinkMessage != null) {
-                Map endDeviceIds = (Map) map.get("end_device_ids");
-                String deviceId = (String) endDeviceIds.get("device_id");
-                String relayStatusBase64 = (String) uplinkMessage.get("frm_payload");
-                byte[] relayStatusHexBytes = Base64.decode(relayStatusBase64);
-                String relayStatusHex = Hex.encodeToString(relayStatusHexBytes);
-                relayStatusHex = relayStatusHex.substring(0, relayStatusHex.length() - 2);
-                String relayStatusBin = hexToBin(relayStatusHex);
-                for (int i = relayStatusBin.length() - 1; i >= 0; i--) {
-                    int identityId = relayStatusBin.length() - i;
-                    relayMapper.updateIsOpenByIdentityIdAndDeviceId(relayStatusBin.charAt(i) != '0', identityId, deviceId);
-                }
-                transactionManager.commit(status);
+    public void saveMqttMap(Map payload) {
+        String data = (String) payload.get("data");
+        if (data != null) {
+            String deviceId = (String) payload.get("devEUI");
+            byte[] relayStatusHexBytes = Base64.decode(data);
+            String relayStatusHex = Hex.encodeToString(relayStatusHexBytes);
+            relayStatusHex = relayStatusHex.substring(0, relayStatusHex.length() - 2);
+            String relayStatusBin = hexToBin(relayStatusHex);
+            for (int i = relayStatusBin.length() - 1; i >= 0; i--) {
+                int identityId = relayStatusBin.length() - i;
+                relayMapper.updateIsOpenByIdentityIdAndDeviceId(relayStatusBin.charAt(i) != '0', identityId, deviceId);
             }
-        } catch (IOException e) {
-            transactionManager.rollback(status);
-            e.printStackTrace();
-            log.info("在转换mqtt发送的数据时发生错误");
         }
+
     }
 
     private String hexToBin(String hex) {
@@ -156,15 +142,18 @@ public class RelayServiceImpl implements RelayService {
     }
 
     private String getTopic(String deviceId) {
-        String preTopic = "v3/lora-relay@ttn/devices/";
-        String postTopic = "/down/push";
+        //String preTopic = "v3/lora-relay@ttn/devices/";
+        //String postTopic = "/down/push";
+        String preTopic = "application/5/device/";
+        String postTopic = "/command/down";
         return preTopic + deviceId + postTopic;
     }
 
-    private static String getSendMqttContent(String Instruction) {
-        String preContent = " {   \"downlinks\": [{     \"f_port\": 15,     \"frm_payload\": \"";
-        String postContent = "\"   }] }";
-        return preContent + Instruction + postContent;
+    private static String getSendMqttContent(String instruction) {
+//        String preContent = " {   \"downlinks\": [{     \"f_port\": 15,     \"frm_payload\": \"";
+//        String postContent = "\"   }] }";
+        String s = "{\"confirmed\": true, \"fPort\": 2,\"data\": \"" + instruction + "\" }";
+        return s;
     }
 
     private static String encodeInstruction(boolean isOpen, Integer identityId) {

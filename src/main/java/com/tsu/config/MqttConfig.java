@@ -1,8 +1,10 @@
 package com.tsu.config;
 
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.tsu.constant.MqttChannelName;
 import com.tsu.service.AirDataService;
+import com.tsu.service.RelayService;
 import lombok.extern.slf4j.Slf4j;
 import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,20 +22,22 @@ import org.springframework.integration.mqtt.core.DefaultMqttPahoClientFactory;
 import org.springframework.integration.mqtt.core.MqttPahoClientFactory;
 import org.springframework.integration.mqtt.event.MqttSubscribedEvent;
 import org.springframework.integration.mqtt.inbound.MqttPahoMessageDrivenChannelAdapter;
-import org.springframework.integration.mqtt.outbound.AbstractMqttMessageHandler;
-import org.springframework.integration.mqtt.outbound.MqttPahoMessageHandler;
 import org.springframework.integration.mqtt.support.DefaultPahoMessageConverter;
 import org.springframework.messaging.Message;
 import org.springframework.util.ObjectUtils;
+
+import java.io.IOException;
+import java.util.List;
+import java.util.Map;
 
 /**
  * @author ZZZ
  */
 @EnableIntegration
 @Configuration
-@ConditionalOnProperty("mqtt.channel01.url")
+@ConditionalOnProperty("mqtt.channel.url")
 @Slf4j
-public class MqttChannel01Config implements ApplicationListener<ApplicationEvent> {
+public class MqttConfig implements ApplicationListener<ApplicationEvent> {
 
 
     @Autowired
@@ -42,63 +46,70 @@ public class MqttChannel01Config implements ApplicationListener<ApplicationEvent
     /**
      * 客户端ID
      */
-    @Value("${mqtt.channel01.id}")
+    @Value("${mqtt.channel.id}")
     private String clientId;
 
     /**
      * 订阅主题，可以是多个主题
      */
-    @Value("${mqtt.channel01.input-topic}")
+    @Value("#{'${mqtt.channel.input-topic}'.split(',')}")
     private String[] inputTopic;
 
     /**
      * 服务器地址以及端口
      */
-    @Value("${mqtt.channel01.url}")
+    @Value("${mqtt.channel.url}")
     private String[] mqttServices;
 
     /**
      * 用户名
      */
-    @Value("${mqtt.channel01.user:#{null}}")
+    @Value("${mqtt.channel.user:#{null}}")
     private String user;
 
     /**
      * 密码
      */
-    @Value("${mqtt.channel01.password:#{null}}")
+    @Value("${mqtt.channel.password:#{null}}")
     private String password;
 
     /**
      * 心跳时间,默认为5分钟
      */
-    @Value("${mqtt.channel01.keep-alive-interval:300}")
+    @Value("${mqtt.channel.keep-alive-interval:300}")
     private Integer KeepAliveInterval;
 
     /**
      * 是否不保持session,默认为session保持
      */
-    @Value("${mqtt.channel01.clean-session:false}")
+    @Value("${mqtt.channel.clean-session:false}")
     private Boolean CleanSession;
 
     /**
      * 是否自动重联，默认为开启自动重联
      */
-    @Value("${mqtt.channel01.automatic-reconnect:true}")
+    @Value("${mqtt.channel.automatic-reconnect:true}")
     private Boolean AutomaticReconnect;
 
     /**
      * 连接超时,默认为30秒
      */
-    @Value("${mqtt.channel01.completion-timeout:30000}")
+    @Value("${mqtt.channel.completion-timeout:30000}")
     private Long CompletionTimeout;
 
     /**
      * 通信质量
      */
-    @Value("${mqtt.channel01.qos:1}")
+    @Value("${mqtt.channel.qos:1}")
     private Integer qos;
 
+
+    @Autowired
+    private ObjectMapper objectMapper;
+
+
+    @Autowired
+    private RelayService relayService;
 
     /**
      * MQTT连接配置
@@ -150,7 +161,7 @@ public class MqttChannel01Config implements ApplicationListener<ApplicationEvent
         //消息质量
         adapter.setQos(qos);
         //输入管道名称
-        adapter.setOutputChannelName(MqttChannelName.INPUT_DATA_01);
+        adapter.setOutputChannelName(MqttChannelName.INPUT_DATA);
         return adapter;
     }
 
@@ -162,19 +173,44 @@ public class MqttChannel01Config implements ApplicationListener<ApplicationEvent
     @Override
     public void onApplicationEvent(ApplicationEvent event) {
         if (event instanceof MqttSubscribedEvent) {
-            log.info("event {}",event);
+            log.info("event {}", event);
             log.info("MQTT服务器连接成功");
         }
     }
+
+
     /**
      * 服务器有数据下发
      * 用ServiceActivator配置需要接收的数据管道名称，当该管道里面的数据时，会自动调用该方法
      *
      * @param in 服务器有数据下发时，序列化后的对象，这里使用byte数组
      */
-    @ServiceActivator(inputChannel = MqttChannelName.INPUT_DATA_01)
+    @ServiceActivator(inputChannel = MqttChannelName.INPUT_DATA)
     public void upCase(Message<byte[]> in) {
-        log.info("接收到MQTT服务器传递的数据，{}", new String(in.getPayload()));
-        airDataService.saveMqttBytes(in.getPayload());
+        log.debug("接收到MQTT服务器传递的数据，{}", new String(in.getPayload()));
+        Map payLoad = null;
+        try {
+            payLoad = objectMapper.readValue(in.getPayload(), Map.class);
+        } catch (IOException e) {
+            log.error("mqtt 数据在转换失败，格式不正确{}", e.getMessage());
+            return;
+        }
+
+        if (ObjectUtils.isEmpty(payLoad)) {
+            return;
+        } else {
+            String applicationID = null;
+            try {
+                applicationID = (String) payLoad.get("applicationID");
+            } catch (ClassCastException e) {
+                log.error("mqtt payload has not application id");
+                return;
+            }
+            if ("4".equals(applicationID)) {
+                airDataService.saveMqttMap(payLoad);
+            } else if ("5".equals(applicationID)) {
+                relayService.saveMqttMap(payLoad);
+            }
+        }
     }
 }

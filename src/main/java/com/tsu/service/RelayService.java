@@ -5,6 +5,7 @@ import com.tsu.entity.Relay;
 import org.apache.shiro.authz.AuthorizationException;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author zzz
@@ -17,12 +18,6 @@ public interface RelayService {
      */
     void add(Relay relay);
 
-    /**
-     * 保存mqtt服务器发送的数据
-     *
-     * @param bytes
-     */
-    void saveMqttBytes(byte[] bytes);
 
     /**
      * 通过大棚id获取继电器
@@ -65,4 +60,7 @@ public interface RelayService {
     void switchAutoTrigger(Integer id, Boolean action);
 
     void checkSwitchAutoTrigger(Integer id, Boolean action, Integer userId);
+
+    void saveMqttMap(Map payLoad);
+
 }
